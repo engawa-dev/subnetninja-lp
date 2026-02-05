@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Subnet Ninja - Terminal-style IPv4 Subnet Calculator for Windows. Cloud reserved-IP modes, CIDR tree, and CIDR overlap detection.">
+
+  <title>Subnet Ninja - Terminal-style IPv4 Subnet Calculator</title>
+
+  <!-- Favicon（index.html と同階層に置く） -->
+  <link rel="icon" type="image/png" href="favicon.png"> <!-- 例：32x32 -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico"> <!-- 任意（互換用） -->
+
+  <!-- Font: match the app (Roboto Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- デザイン設定：ネオングリーン・ターミナルスタイル --- */
+    body {
+      background-color: #0a0a0a;
+      color: #00f000;
+      font-family: 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    a { color: #00f000; transition: color 0.2s; }
+    a:hover { color: #fff; }
+
+    h1::before { content: "> "; color: #fff; }
+    h1 {
+      border-bottom: 1px solid #333;
+      padding-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    h2 { margin-top: 40px; }
+
+    /* 画像は親幅に合わせて縮小（縦横比維持） */
+    img { max-width: 100%; height: auto; display: block; }
+
+    .window-frame {
+      border: 2px solid #333;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 28px 0 10px;
+      box-shadow: 0 0 15px rgba(0, 240, 0, 0.2);
+      background-color: #000;
+    }
+
+    .window-header {
+      background: #111;
+      padding: 6px 10px;
+      color: #444;
+      font-size: 0.8rem;
+      text-align: center;
+      border-bottom: 1px solid #333;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    /* スライドショー（フェード） */
+    .shot {
+      opacity: 1;
+      transition: opacity 250ms ease;
+    }
+    .shot.is-fading {
+      opacity: 0;
+    }
+
+    .shot-caption {
+      padding: 8px 12px;
+      border-top: 1px solid #333;
+      color: #005500;
+      font-size: 0.85rem;
+    }
+
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { margin-bottom: 10px; }
+    li::before { content: "[OK] "; color: #00f000; font-weight: bold; }
+
+    .cta-button {
+      display: inline-block;
+      background: transparent;
+      color: #00f000;
+      padding: 15px 30px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.15rem;
+      margin-top: 18px;
+      border: 2px solid #00f000;
+      box-shadow: 0 0 10px rgba(0, 240, 0, 0.3);
+      transition: all 0.25s ease;
+    }
+    .cta-button:hover {
+      background: #00f000;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 240, 0, 0.8);
+      cursor: pointer;
+    }
+
+    .sale-tag {
+      background-color: #00f000;
+      color: #000;
+      padding: 2px 6px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-right: 10px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1em;
+      background-color: #00f000;
+      animation: blink 1s step-end infinite;
+      vertical-align: sub;
+      margin-left: 5px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .note {
+      font-size: 0.85rem;
+      color: #005500;
+      margin-top: 10px;
+    }
+
+    .footer-link {
+      color: #444;
+      text-decoration: none;
+      border-bottom: 1px dotted #444;
+      margin: 0 6px;
+    }
+    .footer-link:hover { color: #00f000; border-bottom: 1px solid #00f000; }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <header>
+    <h1>SubnetNinja.exe<span class="cursor"> </span></h1>
+    <p>Terminal-style IPv4 Subnet Calculator for Cloud & Network Engineers.</p>
+  </header>
+
+  <div class="window-frame">
+    <div class="window-header">Administrator: Command Prompt - Subnet Ninja</div>
+
+    <!-- assetsフォルダの画像3枚を自動切替（PNG版） -->
+    <img
+      id="heroShot"
+      class="shot"
+      src="assets/screen-calc.png"
+      alt="Subnet Ninja screenshot (Calculator)"
+      width="1600"
+      height="900"
+    >
+
+    <div class="shot-caption">
+      <span id="shotLabel">01 / 03 — Calculator</span>
+    </div>
+  </div>
+
+  <h2>> cat features.txt</h2>
+  <ul>
+    <li><strong>Cloud Reserved-IP Modes:</strong> AWS / Azure / GCP host calculations with reserved IP rules.</li>
+    <li><strong>CIDR Overlap Detection:</strong> Compare two IPv4 CIDR lists (ideal for AWS/Azure/GCP planning).</li>
+    <li><strong>Visual CIDR Tree:</strong> Split a root CIDR into smaller subnets and copy results instantly.</li>
+    <li><strong>Copy to Clipboard:</strong> One-tap copy for quick use in configs and notes.</li>
+    <li><strong>Local-first:</strong> All calculations run on your PC. No account, no signup.</li>
+  </ul>
+
+  <div style="margin-top: 60px; text-align: center;">
+    <p style="margin-bottom: 10px;">
+      STATUS: <span class="sale-tag">LAUNCH SALE</span>
+      <span style="color:#00f000;">See Microsoft Store for pricing in your region.</span>
+    </p>
+
+    <a href="https://apps.microsoft.com/detail/9p7mq8wz741l" class="cta-button" target="_blank" rel="noopener">
+      > EXECUTE INSTALL
+    </a>
+
+    <p class="note">Purchase/activation is handled by Microsoft Store.</p>
+  </div>
+
+  <footer style="margin-top: 80px; border-top: 1px solid #333; padding-top: 20px; font-size: 0.8rem; color: #444; text-align: center;">
+    <p>&copy; 2026 engawa-dev. All systems operational.</p>
+    <p style="margin-top: 10px;">
+      <a href="https://github.com/engawa-dev" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+      <span style="color: #444;">|</span>
+      <a href="https://x.com/Engawa_sushi0" class="footer-link" target="_blank" rel="noopener">X (Twitter)</a>
+    </p>
+  </footer>
+</div>
+
+<script>
+  // スライドショー設定（PNG版・ファイル名はここで管理）
+  const shots = [
+    { src: "assets/screen-calc.png",    label: "01 / 03 — Calculator", alt: "Subnet Ninja screenshot (Calculator)" },
+    { src: "assets/screen-overlap.png", label: "02 / 03 — Overlap",     alt: "Subnet Ninja screenshot (Overlap)" },
+    { src: "assets/screen-tree.png",    label: "03 / 03 — Tree",        alt: "Subnet Ninja screenshot (CIDR Tree)" }
+  ];
+
+  const intervalMs = 3500; // 切り替え間隔（ms）
+  let i = 0;
+
+  const img = document.getElementById("heroShot");
+  const label = document.getElementById("shotLabel");
+
+  function showShot(nextIndex) {
+    const s = shots[nextIndex];
+    img.classList.add("is-fading");
+    setTimeout(() => {
+      img.src = s.src;
+      img.alt = s.alt;
+      label.textContent = s.label;
+      img.classList.remove("is-fading");
+    }, 220);
+  }
+
+  // 初期表示
+  showShot(0);
+
+  // 自動切り替え
+  setInterval(() => {
+    i = (i + 1) % shots.length;
+    showShot(i);
+  }, intervalMs);
+</script>
+</body>
+</html>
